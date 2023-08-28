@@ -1,8 +1,8 @@
 const app = require('./app');
-const appWs = require('./app-ws');
+const createWebSocketServer = require('./app-ws'); // Importar a função que cria o servidor WebSocket
 
-const server = app.listen(process.env.PORT || 3000, () => {
-  console.log('App Express is runnig"')
-})
+const httpServer = app.listen(process.env.PORT || 3000, () => {
+  console.log('App Express is running');
+});
 
-appWs(server);
+createWebSocketServer(httpServer); // Passar a instância do servidor HTTP
