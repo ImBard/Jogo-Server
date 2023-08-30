@@ -9,6 +9,8 @@ class Player {
   }
 
   getMoves() {
+    // console.log(this.moves)
+    // console.log(typeof(this.moves))
     return this.moves;
   }
 }

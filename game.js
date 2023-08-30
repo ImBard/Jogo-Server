@@ -21,7 +21,7 @@ class Game {
 
     for (let possibility of this.possibilities) {
       let c = 0;
-      arr.map((item) => {
+      jogadas.map((item) => {
         if (possibility.includes(item)) c++;
       })
       if (c == 3) {
@@ -33,7 +33,7 @@ class Game {
     if (this.p1.length + this.p2.length == 9) {
       result = [false, 'Deu velha!'];
     }
-
+    // console.log(result);
     return result; // Teve ganhador ou empatou
 
   }

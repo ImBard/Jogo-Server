@@ -2,6 +2,7 @@ const Game = require('./game');
 const WebSocket = require('ws');
 const Player = require('./player');
 let turn = true;
+const fs = require('fs');
 // Objeto para armazenar os pares de usuários
 const rooms = {};
 const game = new Game();
@@ -21,26 +22,29 @@ function onMessage(id, sender, data) {
 
     // Encontra o jogador que enviou a mensagem
     const player = room.find(connection => connection.ws === sender);
-    console.log(data);
     if (player) {
       // Adiciona a jogada ao array de movimentos do jogador
       game.setJogadas(data, turn);
-      player.setMoves(data);
+      player.setMoves(`${data}`);
       // console.log(`${player.player.username}'s moves: ${player.moves}`);
     }
-    console.log('getMOVES');
-    console.log(player.getMoves());
+    // console.log('getMOVES');
+    // console.log(player.getMoves());
 
-    // const result = game.ganhou(`${player.moves}`);
-    // if (result[0]) {
-    //   room.forEach(connection => {
-    //     connection.player.send(JSON.stringify(result));
-    //   });
-    // } else if (result[0] == false){
-    //   room.forEach(connection => {
-    //     connection.player.send(JSON.stringify(result));
-    //   });
-    // }
+    const result = { result: false, moves: [] }
+    const gameResult = game.ganhou(player.getMoves());
+    result.result = gameResult[0];
+    result.moves = gameResult[1];
+    console.log(result);
+    if (result.result) {
+      room.forEach(connection => {
+        connection.ws.send(JSON.stringify(result));
+      });
+    } else if (result.result == false) {
+      room.forEach(connection => {
+        connection.ws.send(JSON.stringify(player.getMoves()));
+      });
+    }
 
   }
 }
