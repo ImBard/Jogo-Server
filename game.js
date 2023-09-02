@@ -33,7 +33,6 @@ class Game {
     if (this.p1.length + this.p2.length == 9) {
       result = [false, 'Deu velha!'];
     }
-    // console.log(result);
     return result; // Teve ganhador ou empatou
 
   }

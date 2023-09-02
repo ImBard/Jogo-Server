@@ -6,7 +6,10 @@ const fs = require('fs');
 // Objeto para armazenar os pares de usuários
 const rooms = {};
 const game = new Game();
-
+const roomPlayers = {
+  player1: "",
+  player2: ""
+}
 function onError(ws, err) {
   console.error(`onError: ${err.message}`);
 }
@@ -26,16 +29,12 @@ function onMessage(id, sender, data) {
       // Adiciona a jogada ao array de movimentos do jogador
       game.setJogadas(data, turn);
       player.setMoves(`${data}`);
-      // console.log(`${player.player.username}'s moves: ${player.moves}`);
-    }
-    // console.log('getMOVES');
-    // console.log(player.getMoves());
 
-    const result = { result: false, moves: [] }
+    }
+    const result = { result: false, moves: [], winner: player.ws.username }
     const gameResult = game.ganhou(player.getMoves());
     result.result = gameResult[0];
     result.moves = gameResult[1];
-    console.log(result);
     if (result.result) {
       room.forEach(connection => {
         connection.ws.send(JSON.stringify(result));
@@ -60,11 +59,28 @@ function onConnection(ws, req) {
 
   const player = new Player(ws);
 
-  rooms[id].push(player);
+  if (rooms[id].length === 0) {
+    // Este é o primeiro usuário na sala
+    rooms[id].push(player);
+    player.ws.on('message', data => {
+      onMessage(id, player.ws, data);
+    });
+    roomPlayers.player1 = username;
+    // Enviar uma mensagem para o primeiro usuário
+    player.ws.send("inicia_o_jogo");
 
-  player.ws.on('message', data => {
-    onMessage(id, player.ws, data);
-  });
+  } else {
+    // Já existe um usuário na sala
+    rooms[id].push(player);
+    player.ws.on('message', data => {
+      onMessage(id, player.ws, data);
+    });
+    roomPlayers.player2 = username;
+    rooms[id].forEach(connection => {
+      connection.ws.send(JSON.stringify(roomPlayers));
+    });
+
+  }
 
   if (rooms[id].length == 2) {
     ws.on('error', error => onError(ws, error));
@@ -94,7 +110,6 @@ function parseQueryParams(url) {
   const queryParams = {};
   const queryString = url.split('?');
   queryString.shift()
-  console.log(queryString);
   if (queryString) {
     for (let param of queryString) {
       const [key, value] = param.split('=');
